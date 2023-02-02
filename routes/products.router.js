@@ -37,9 +37,7 @@ productsRouters.patch('/:id', async (req, res) => {
         const product = await service.update(id, body)
         res.json(product);
     } catch (error) {
-        res.status(404).json({
-            message: error.message
-        });
+        next(error);
     }
 });
 // delete  info

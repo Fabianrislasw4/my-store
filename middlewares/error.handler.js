@@ -1,7 +1,7 @@
 function LogErrors ( err, req, res, next ){
     console.log('LogErrors');
     console.error(err);
-    next();
+    next(err);
 }
 
 // Para que se detecte que el middleware es de tipo error 
@@ -14,7 +14,18 @@ function ErrorHandler(err, req, res, next){
     });
 }
 
+
+function boomErrorHandler(err, req, res, next){
+    if(err.isBoom){
+        const { output } = err;
+        res.status(output.statusCode).json(output.payload);
+    }
+    next(err);
+}
+
+
 module.exports = {
     LogErrors,
-    ErrorHandler
+    ErrorHandler,
+    boomErrorHandler
 }
