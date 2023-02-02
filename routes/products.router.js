@@ -1,7 +1,10 @@
 const express = require('express')
 const ProductsService = require('../services/product.service');
-const productsRouters = express.Router();
+const validatorHandler = require('./../middlewares/validator.handler')
+const { createProductSchema, updateProductSchema, getProductSchema } = require('./../schemas/product.schema')
 
+
+const productsRouters = express.Router();
 const service = new ProductsService();
 
 productsRouters.get('/', async (req, res) => {
@@ -13,7 +16,10 @@ productsRouters.get('/filter', (req, res) => {
     res.send('Yo soy un filter');
 });
 
-productsRouters.get('/:id', async (req, res, next) => {
+productsRouters.get('/:id',
+    // Se le envia al middleware el schema de datos y de donde va obtener la informacion 
+    validatorHandler(getProductSchema, 'params') // Se agrega el middleware de validacion, para antes de hacer el get se valide el dato..
+    ,async (req, res, next) => {
     try {
         const { id } = req.params;
         const product = await service.findOne(id);
@@ -24,13 +30,18 @@ productsRouters.get('/:id', async (req, res, next) => {
 });
 
 // Insert info
-productsRouters.post('/', async (req, res) => {
+productsRouters.post('/', 
+    validatorHandler(createProductSchema, 'body')
+    , async (req, res) => {
     const body = req.body;
     const newProduct = await service.create(body);
     res.status(201).json(newProduct);
 })
 // Update partial info
-productsRouters.patch('/:id', async (req, res) => {
+productsRouters.patch('/:id',
+      validatorHandler(getProductSchema, 'params') //Puede haber mas de un middleware, que se encargen de hace distintas cosas.. Este valida el ID
+    , validatorHandler(updateProductSchema, 'body') // Y este validara la info...
+    , async (req, res) => {
     try {
         const { id } = req.params;
         const body = req.body;
